@@ -100,6 +100,7 @@ public class clientCon implements Runnable{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					turn=false;
 
 				} else {
 					try {
@@ -118,6 +119,7 @@ public class clientCon implements Runnable{
 						game.leaveGame(pId);
 						
 					}
+					turn=true;
 				}
 			}
 			
