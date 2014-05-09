@@ -2,14 +2,13 @@ package tl14server;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 
 public class GameHandler {
 
 	private int gameCount=0;
 	private ArrayList<Game> games;
-	private List<Thread> thList;
+	//private ArrayList<Thread> thList;
 	
 	public GameHandler(){
 		
@@ -17,25 +16,44 @@ public class GameHandler {
 	
 	public void addThread(Thread client){
 		client.start();
-		thList.add(client);
+		//thList.add(client);
 	}
 	
 	protected synchronized Game getGame(int pId,String name,String name2){
+		//name2 είναι το όνομα του νήματος που καλεί
+		boolean wait=false;
+		Game tempG = null;
 		
 		if(!name.equals("")){
-			for(int i=0;i<=games.size();i++){
-				if(pId==games.get(i).getPlayersId()[0] || pId==games.get(i).getPlayersId()[1]){
-					
+			for(int i=0;i<games.size();i++){
+				if(games.get(i).isWait() && name.equals(games.get(i).getPlayerName())){
+					gameCount++;
 					return games.get(i);
 				}
 			}
-			gameCount++;
-			Game tempG=new Game(gameCount,pId,name,this);
-			games.add(tempG);
-			return tempG;
+		}else{
+			boolean found=false;
+			int i=0;
+			while(!found && i<games.size()){
+				if(!games.get(i).isWait() && !games.get(i).isFull()){
+					gameCount++;
+					games.get(i).addPlayer(name2, pId);
+					tempG=games.get(i);
+					found=true;
+				}
+			}
+			if(!found){
+				gameCount++;
+				if(!name.equals(""))
+					wait=true;
+				
+				tempG=new Game(gameCount,pId,name2,wait,this);
+				games.add(tempG);
+			}
 		}
 		
-		return null;
+		return tempG;
+
 	}
 	
 	public synchronized void dropGame(int id){
@@ -45,4 +63,27 @@ public class GameHandler {
 			}
 		}
 	}
+	
+	
+	
+	public synchronized Game findMatch(int pId,String name,int id){
+		
+		for(int i=0;i<games.size();i++){
+			if(games.get(i).getId()!=id && !games.get(i).isFull()){
+				games.get(i).addPlayer(name, pId);
+				return games.get(i);
+			}
+		}
+		return null;
+
+	}
+	
+	/*
+	 * for(int j=0;j<=thList.size();j++){
+						if(thList.get(j).getId()==pId){
+							thList.remove(j);
+							break;
+						}
+					}
+	*/
 }
