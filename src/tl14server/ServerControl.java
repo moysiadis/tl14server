@@ -29,6 +29,7 @@ public class ServerControl implements Runnable{
 		
 		try {
 			listeningSock=new ServerSocket(listeningPort);
+			System.out.println("Server started");
 		} catch (IOException e) {
 			
 			throw new RuntimeException("cannot open server socket");
@@ -53,6 +54,7 @@ public class ServerControl implements Runnable{
 			}
 			
 			Thread temp=new Thread(new clientCon (clientSock,count,gH));
+			System.out.println("new client added");
 			gH.addThread(temp);
 			
 		}
