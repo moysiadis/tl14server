@@ -11,7 +11,7 @@ public class GameHandler {
 	//private ArrayList<Thread> thList;
 	
 	public GameHandler(){
-		
+		games=new ArrayList<Game>();
 	}
 	
 	public void addThread(Thread client){
@@ -20,7 +20,7 @@ public class GameHandler {
 	}
 	
 	protected synchronized Game getGame(int pId,String name,String name2){
-		//name2 είναι το όνομα του νήματος που καλεί
+		//name2 είναι το όνομα του παικτη του νήματος που καλεί
 		boolean wait=false;
 		Game tempG = null;
 		

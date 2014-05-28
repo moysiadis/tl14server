@@ -7,14 +7,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class clientCon implements Runnable{
 
 	private Socket sock;
 	private int pId,pNo;
 	private BufferedReader input;
-	private BufferedWriter output;
+	private PrintWriter output;
 	private AnalyseMessage anM;
 	private GameHandler gH;
 	private Game game;
@@ -41,12 +43,13 @@ public class clientCon implements Runnable{
 	@Override
 	public void run() {
 		String temp,rMsg;
-		String[] msg;
+		ArrayList<String> msg=new ArrayList<String>();
 		try {
 			input  = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-			output = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+			output = new PrintWriter(sock.getOutputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+			System.out.println("error in/out stream");
 			e.printStackTrace();
 		}
 		
@@ -111,10 +114,10 @@ public class clientCon implements Runnable{
 					}
 
 					msg = anM.AnalyseMsg(thMsg);
-					if (msg[0].equals("0")) {
+					if (msg.get(0).equals("0")) {
 						send(thMsg);
 						moveConsumed();
-					}else if(msg[0].equals("1")){
+					}else if(msg.get(0).equals("1")){
 						System.out.println("error in msg");
 						game.leaveGame(pId);
 						
@@ -166,16 +169,16 @@ public class clientCon implements Runnable{
 	
 	private int getGame() throws IOException{
 		String temp;
-		String[] msg;
+		ArrayList<String> msg=new ArrayList<String>();
 		if (game==null) {
 			///////////////////////////get game=0
 			send("sendname");
 			temp = receive();
 			msg = anM.AnalyseMsg(temp);
-			if (msg[1].equals("-1")) {
+			if (msg.get(1).equals("-1")) {
 				//στο πρώτο μήνυμα ο client δίνει το όνομα του παίκτη
 				//και το όνομα του παίκτη που ψάχνει ο χρήστης αν ζητάει να παίξει με άλλον
-				game = gH.getGame(pId, "", msg[0]);
+				game = gH.getGame(pId, "", msg.get(0));
 				game.addThread(pId, this);
 				send("searchwait");
 				return 0;
@@ -193,20 +196,25 @@ public class clientCon implements Runnable{
 	}
 	
 	private String receive() throws IOException{
-		String temp="";
+		String temp=null;
 		boolean done=false;
 		
-		while(!done){
+	//	while(!done){
 			try {
-				temp.concat(input.readLine());
+				
+				temp=input.readLine();
+				System.out.println(temp);
 				done=true;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				System.out.println("Connection problem in receive");
-				game.leaveGame(pId);
-				sock.close();
+				//game.leaveGame(pId);
+				System.out.println(done+":"+temp);
+				input.close();
+				this.output.close();
+				Thread.currentThread().interrupt();
 			}
-		}
+//		}
 		return temp;
 		
 	}
@@ -217,14 +225,11 @@ public class clientCon implements Runnable{
 	}
 	
 	private int send (String msg){
-		
-		try {
-			output.write(msg);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Connection problem in send");
-			return 2;
-		}
+		msg.concat("\r\n");
+		System.out.println("sending");
+		output.println(msg);
+		output.flush();
+		System.out.print("sent: "+msg);
 		return 1;
 	}
 

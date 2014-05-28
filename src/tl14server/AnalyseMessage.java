@@ -1,25 +1,30 @@
 package tl14server;
 
+import java.util.ArrayList;
+
 public class AnalyseMessage {
 
 	public AnalyseMessage(){
 		
 	}
 	
-	public String[] AnalyseMsg(String msg){
+	public ArrayList<String> AnalyseMsg(String msg){
 		//εάν είναι move επιστρέφουμε temp[0]=0
 		//εάν είναι error επιστρέφουμε temp[0]=1
-		String[] temp=null;
-		String[] ret=null;
+		ArrayList<String> temp=new ArrayList<String>();
 		
-		temp=msg.split(",");
-		if(temp[0].equals("player")){
-			ret[0]=temp[1];
-			ret[1]=temp[2];
-		}else if(temp[0].equals("move")){
-			ret[0]="0";
+		for(int i=0;i<msg.split(",").length;i++){
+			temp.add(msg.split(",")[i]);
 		}
 		
-		return ret;
+		
+		
+		if(temp.get(0).equals("player")){
+			temp.remove(0);
+		}else if(temp.get(0).equals("move")){
+			temp.set(0, "0");
+		}
+		
+		return temp;
 	}
 }
